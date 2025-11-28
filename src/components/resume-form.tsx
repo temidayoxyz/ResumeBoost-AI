@@ -5,19 +5,16 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Loader2, Sparkles, UploadCloud, File as FileIcon, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 const formSchema = z.object({
-  resume: z.string().min(100, {
-    message: 'Resume must be at least 100 characters to provide a meaningful analysis.',
-  }),
+  file: z.instanceof(File).refine(file => file.size > 0, 'File is required.'),
 });
 
 interface ResumeFormProps {
-  onAnalyze: (data: z.infer<typeof formSchema>) => void;
+  onAnalyze: (file: File) => void;
   isLoading: boolean;
 }
 
@@ -26,32 +23,13 @@ export default function ResumeForm({ onAnalyze, isLoading }: ResumeFormProps) {
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      resume: '',
-    },
   });
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     const uploadedFile = acceptedFiles[0];
     if (uploadedFile) {
       setFile(uploadedFile);
-      // We can't easily read PDF/DOCX on the client. We will pass the text to the parent.
-      // The parent will then send it to a server action.
-      // For simplicity, let's assume we can get text here.
-      // A real implementation would require a library like pdf-text-reader or similar logic on the server.
-      
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const text = e.target?.result as string;
-        // In a real app, you would parse PDF/DOCX. We'll simulate it.
-        // For now, we'll just pretend the file content is readable as text.
-        // This is a placeholder for where file-to-text logic would go.
-        // For this example, we'll just use the file name as a stand-in for content.
-        // A more robust solution is needed for production.
-        const fileContent = `File name: ${uploadedFile.name}. File content would be extracted here. For now, this is just placeholder text. A real app would use a server-side parser for PDF/DOCX.`;
-        form.setValue('resume', fileContent, { shouldValidate: true });
-      };
-      reader.readAsText(uploadedFile); // This is simplified. Real parsing is more complex.
+      form.setValue('file', uploadedFile, { shouldValidate: true });
     }
   }, [form]);
 
@@ -64,32 +42,15 @@ export default function ResumeForm({ onAnalyze, isLoading }: ResumeFormProps) {
     maxFiles: 1,
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // We can't read file content on the client easily for docx/pdf.
-    // We'll pass a placeholder to the server action, which would handle the file.
-    // For the purpose of this prototype, we'll send a simplified text.
-     if(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const text = e.target?.result;
-            // This is a simplification. A real app would process the file on the server.
-            const resumeText = `[Simulated content from ${file.name}]`;
-             onAnalyze({ resume: resumeText });
-        };
-        // This is not how you read a PDF or DOCX file.
-        // This is a placeholder for client-side file reading logic.
-        // A proper implementation would likely upload the file and process it server-side.
-        onAnalyze({ resume: `This is a placeholder for the content of ${file.name}. Actual file content extraction for PDF/DOCX requires a server-side component or a heavy client-side library, which is beyond the current scope. Assuming this text is the extracted content for analysis.` });
-
-    } else {
-        form.handleSubmit(onAnalyze)();
+  const onSubmit = () => {
+    if(file) {
+      onAnalyze(file);
     }
   };
 
-
   const removeFile = () => {
     setFile(null);
-    form.setValue('resume', '');
+    form.reset();
   };
 
   return (
@@ -99,11 +60,11 @@ export default function ResumeForm({ onAnalyze, isLoading }: ResumeFormProps) {
         <CardDescription>Upload a PDF or DOCX file to get instant AI-powered feedback.</CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onAnalyze)}>
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
           <CardContent>
             <FormField
               control={form.control}
-              name="resume"
+              name="file"
               render={() => (
                 <FormItem>
                   <FormLabel className="sr-only">Resume File</FormLabel>

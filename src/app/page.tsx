@@ -13,17 +13,42 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleAnalyze = async (data: { resume: string }) => {
+  const handleAnalyze = async (file: File) => {
     setIsLoading(true);
     setError(null);
     setFeedback(null);
     
     try {
-      // In a real app, you might upload the file here and pass a file ID
-      // to the server action. For this prototype, we're passing the
-      // (simulated) text content directly.
-      const result = await getResumeFeedback(data.resume);
-      setFeedback(result);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const fileContent = (e.target?.result as string).split(',')[1];
+          const result = await getResumeFeedback({ fileContent, fileType: file.type });
+          setFeedback(result);
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+          setError(errorMessage);
+          toast({
+            title: 'Error',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      reader.onerror = () => {
+        const errorMessage = 'Failed to read file.';
+        setError(errorMessage);
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+      };
+      reader.readAsDataURL(file);
+
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
       setError(errorMessage);
@@ -32,7 +57,6 @@ export default function Home() {
         description: errorMessage,
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   };
