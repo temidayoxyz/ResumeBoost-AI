@@ -25,7 +25,7 @@ const GenerateResumeFeedbackOutputSchema = z.object({
 export type GenerateResumeFeedbackOutput = z.infer<typeof GenerateResumeFeedbackOutputSchema>;
 
 export async function generateResumeFeedback(resumeText: GenerateResumeFeedbackInput): Promise<GenerateResumeFeedbackOutput> {
-  if (!resumeText.trim() || resumeText.trim().length < 100) {
+  if (!resumeText.trim()) {
     return {
         feedback: 'No resume content was provided for analysis. Please provide resume text to receive specific feedback on its strengths and weaknesses.',
         skillSuggestions: 'Without resume content, specific skill suggestions cannot be generated. Please provide your resume for tailored advice.',
@@ -40,9 +40,9 @@ const resumeFeedbackPrompt = ai.definePrompt({
   input: {schema: GenerateResumeFeedbackInputSchema},
   output: {schema: GenerateResumeFeedbackOutputSchema},
   prompt: `You are an expert resume reviewer. Analyze the following resume content and provide:
-1.  **Feedback**: Constructive feedback on its strengths and weaknesses.
-2.  **Skill Suggestions**: Specific, actionable skill improvements.
-3.  **Readability Score**: A Flesch-Kincaid readability score from 0 to 100.
+1.  **Feedback**: Constructive feedback on its strengths and weaknesses. If the content is too short or seems incomplete, state that and recommend providing a full resume.
+2.  **Skill Suggestions**: Specific, actionable skill improvements based on the provided text.
+3.  **Readability Score**: A Flesch-Kincaid readability score from 0 to 100. If the text is too short, the score should be 0.
 
 Resume Content:
 {{{input}}}

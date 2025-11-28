@@ -37,8 +37,8 @@ export async function getResumeFeedback(fileData: { fileContent: string; fileTyp
     throw new Error('Failed to read the content of the resume file.');
   }
 
-  if (!resumeText.trim() || resumeText.trim().length < 100) {
-    throw new Error('Extracted resume text must be at least 100 characters for a meaningful analysis. The file might be empty, corrupted, or password-protected.');
+  if (!resumeText.trim()) {
+    throw new Error('Extracted resume text is empty. The file might be empty, corrupted, or password-protected.');
   }
 
   try {
