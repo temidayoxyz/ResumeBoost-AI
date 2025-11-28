@@ -38,7 +38,7 @@ export async function getResumeFeedback(fileData: { fileContent: string; fileTyp
   }
 
   if (!resumeText.trim() || resumeText.trim().length < 100) {
-    throw new Error('Extracted resume text must be at least 100 characters for a meaningful analysis.');
+    throw new Error('Extracted resume text must be at least 100 characters for a meaningful analysis. The file might be empty, corrupted, or password-protected.');
   }
 
   try {
