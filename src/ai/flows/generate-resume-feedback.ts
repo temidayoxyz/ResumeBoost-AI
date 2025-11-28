@@ -14,7 +14,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const GenerateResumeFeedbackInputSchema = z.string().describe('The text content of the resume to analyze.');
+const GenerateResumeFeedbackInputSchema = z.string().describe('The text content of the resume file to analyze.');
 export type GenerateResumeFeedbackInput = z.infer<typeof GenerateResumeFeedbackInputSchema>;
 
 const GenerateResumeFeedbackOutputSchema = z.object({
@@ -32,9 +32,9 @@ const resumeFeedbackPrompt = ai.definePrompt({
   name: 'resumeFeedbackPrompt',
   input: {schema: GenerateResumeFeedbackInputSchema},
   output: {schema: GenerateResumeFeedbackOutputSchema},
-  prompt: `You are an expert resume reviewer. Analyze the following resume text and provide feedback on its strengths and weaknesses, suggest specific skill improvements, and calculate a readability score.
+  prompt: `You are an expert resume reviewer. Analyze the following resume content and provide feedback on its strengths and weaknesses, suggest specific skill improvements, and calculate a readability score.
 
-Resume Text:
+Resume Content:
 {{resumeText}}
 
 Provide your feedback in a structured format.

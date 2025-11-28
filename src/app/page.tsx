@@ -19,6 +19,9 @@ export default function Home() {
     setFeedback(null);
     
     try {
+      // In a real app, you might upload the file here and pass a file ID
+      // to the server action. For this prototype, we're passing the
+      // (simulated) text content directly.
       const result = await getResumeFeedback(data.resume);
       setFeedback(result);
     } catch (e) {
